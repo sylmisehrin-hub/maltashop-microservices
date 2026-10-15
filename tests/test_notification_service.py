@@ -119,3 +119,39 @@ def test_notification_ordering(notification_app):
     ]
 
     assert order_ids == [3, 2, 1]
+
+
+def test_duplicate_event_id_rejected(notification_app):
+    app, db, Notification = notification_app
+
+    from sqlalchemy.exc import IntegrityError
+
+    with app.app_context():
+        first = Notification(
+            event_id="duplicate-event-001",
+            order_id=3,
+            customer_id=501,
+            correlation_id="correlation-001",
+            message="Order 3 placed successfully"
+        )
+
+        db.session.add(first)
+        db.session.commit()
+
+        duplicate = Notification(
+            event_id="duplicate-event-001",
+            order_id=3,
+            customer_id=501,
+            correlation_id="correlation-001",
+            message="Order 3 placed successfully"
+        )
+
+        db.session.add(duplicate)
+
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+
+        db.session.rollback()
+
+        assert Notification.query.count() == 1
+    
