@@ -18,7 +18,11 @@ def publish_event(event):
 
         channel.queue_declare(
             queue="order_events",
-            durable=True
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": "order_dead_letters",
+                "x-dead-letter-routing-key": "failed_order_event"
+            }
         )
 
         channel.confirm_delivery()

@@ -1,3 +1,4 @@
+
 import json
 import os
 import pika
@@ -40,15 +41,21 @@ def callback(ch, method, properties, body):
     try:
         event = json.loads(body)
         process_event(event)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        ch.basic_ack(
+            delivery_tag=method.delivery_tag
+        )
 
     except Exception as exc:
-        print(f"Event processing failed: {exc}", flush=True)
+        print(
+            f"Event processing failed; routing to DLQ: {exc}",
+            flush=True
+        )
+
         ch.basic_nack(
             delivery_tag=method.delivery_tag,
             requeue=False
         )
-
 
 def start_worker():
     connection = pika.BlockingConnection(
@@ -60,9 +67,33 @@ def start_worker():
 
     channel = connection.channel()
 
+    # Exchange used to route rejected messages.
+    channel.exchange_declare(
+        exchange="order_dead_letters",
+        exchange_type="direct",
+        durable=True
+    )
+
+    # Dead Letter Queue.
+    channel.queue_declare(
+        queue="order_events_dlq",
+        durable=True
+    )
+
+    channel.queue_bind(
+        exchange="order_dead_letters",
+        queue="order_events_dlq",
+        routing_key="failed_order_event"
+    )
+
+    # Main queue with dead-letter configuration.
     channel.queue_declare(
         queue="order_events",
-        durable=True
+        durable=True,
+        arguments={
+            "x-dead-letter-exchange": "order_dead_letters",
+            "x-dead-letter-routing-key": "failed_order_event"
+        }
     )
 
     channel.basic_qos(prefetch_count=1)
@@ -72,12 +103,16 @@ def start_worker():
         on_message_callback=callback
     )
 
-    print("Notification worker waiting for events...", flush=True)
+    print(
+        "Notification worker waiting for events...",
+        flush=True
+    )
 
     try:
         channel.start_consuming()
     finally:
-        connection.close()
+        if connection.is_open:
+            connection.close()
 
 
 if __name__ == "__main__":
