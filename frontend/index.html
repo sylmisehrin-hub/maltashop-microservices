@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>MaltaShop — Operations</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/script.js" defer></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#overview" aria-label="MaltaShop home"><span class="brand-mark">m<span>.</span></span><span class="brand-copy">malta<span>shop</span><small>OPERATIONS</small></span></a>
+    <div class="workspace-label">WORKSPACE</div>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#overview" data-view="overview" class="nav-link active"><span class="nav-icon">▦</span> Overview</a>
+      <a href="#orders" data-view="orders" class="nav-link"><span class="nav-icon">▤</span> Orders</a>
+      <a href="#activity" data-view="activity" class="nav-link"><span class="nav-icon">◷</span> Activity <span id="nav-count" class="nav-count">0</span></a>
+    </nav>
+    <div class="sidebar-bottom"><div class="workspace-avatar">MS</div><div><strong>MaltaShop</strong><span>Store administration</span></div></div>
+  </aside>
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left"><button id="menu-btn" class="menu-btn" aria-label="Toggle navigation">☰</button><span class="breadcrumb">Workspace <span>/</span> <b id="breadcrumb-current">Overview</b></span></div>
+      <div class="topbar-right"><span class="sync-dot" id="sync-dot"></span><span class="sync-text" id="sync-label">Checking connection</span><button class="icon-button" id="refresh-btn" title="Refresh data" aria-label="Refresh data">↻</button><span class="avatar">MS</span></div>
+    </header>
+    <main class="content">
+      <section class="page-view active" id="view-overview">
+        <div class="page-heading"><div><div class="eyebrow">STORE OPERATIONS</div><h1>Overview</h1><p>Manage incoming orders and keep track of customer updates.</p></div><button class="primary-btn" data-go="orders"><span>＋</span> New order</button></div>
+        <div class="stat-grid">
+          <div class="stat-card"><span class="stat-title">Notifications received</span><strong id="stat-notifications">—</strong><span class="stat-detail">Recorded by notification service</span><span class="stat-icon">◉</span></div>
+          <div class="stat-card"><span class="stat-title">Most recent order</span><strong id="stat-latest">—</strong><span class="stat-detail">Based on received notifications</span><span class="stat-icon">▤</span></div>
+          <div class="stat-card"><span class="stat-title">Service availability</span><strong id="stat-services">Checking</strong><span class="stat-detail" id="service-detail">Checking API connections</span><span class="stat-icon">⌁</span></div>
+        </div>
+        <div class="overview-grid">
+          <section class="panel"><div class="panel-header"><div><h2>Recent activity</h2><p>Latest customer order updates</p></div><button class="text-btn" data-go="activity">View all <span>→</span></button></div><div id="recent-activity" class="activity-list"><div class="loading">Loading activity…</div></div></section>
+          <section class="panel quick-panel"><div class="panel-header"><div><h2>Quick actions</h2><p>Common store tasks</p></div></div><button class="action-item" data-go="orders"><span class="action-symbol">＋</span><span><strong>Create an order</strong><small>Submit a new customer order</small></span><span class="action-arrow">→</span></button><button class="action-item" data-go="orders" data-focus="lookup"><span class="action-symbol">⌕</span><span><strong>Find an order</strong><small>Look up an order by ID</small></span><span class="action-arrow">→</span></button><button class="action-item" data-go="activity"><span class="action-symbol">◷</span><span><strong>View notifications</strong><small>Review order confirmation activity</small></span><span class="action-arrow">→</span></button><div class="quick-foot"><span class="small-dot"></span> Activity refreshes automatically every 8 seconds</div></section>
+        </div>
+      </section>
+      <section class="page-view" id="view-orders">
+        <div class="page-heading"><div><div class="eyebrow">ORDER MANAGEMENT</div><h1>Orders</h1><p>Create a new order or look up an existing one.</p></div></div>
+        <div class="order-grid">
+          <section class="panel form-panel"><div class="panel-header"><div><h2>Create an order</h2><p>Enter the details below to place a new order.</p></div></div>
+            <form id="order-form" novalidate><label for="customer-id">Customer ID</label><input id="customer-id" name="customer_id" type="number" min="1" step="1" required placeholder="e.g. 501"><label for="product-id">Product ID</label><input id="product-id" name="product_id" type="number" min="1" step="1" required placeholder="e.g. 100"><label for="quantity">Quantity</label><input id="quantity" name="quantity" type="number" min="1" step="1" value="1" required><button class="primary-btn submit-btn" id="submit-order" type="submit">Place order <span>→</span></button></form>
+            <div id="order-result" class="result-box" role="status" aria-live="polite" hidden></div>
+          </section>
+          <div class="side-stack"><section class="panel lookup-panel"><div class="panel-header"><div><h2>Find an order</h2><p>Check the current status of an order.</p></div></div><form id="lookup-form" class="lookup-form"><label for="lookup-id">Order ID</label><div class="lookup-row"><input id="lookup-id" type="number" min="1" step="1" placeholder="Enter order ID" required><button class="secondary-btn" type="submit">Search</button></div></form><div id="lookup-result" class="result-box" role="status" aria-live="polite" hidden></div></section>
+          <section class="info-panel"><div class="info-icon">ⓘ</div><div><strong>Order confirmation</strong><p>New orders are saved immediately. A customer notification follows shortly after processing.</p></div></section></div>
+        </div>
+      </section>
+      <section class="page-view" id="view-activity">
+        <div class="page-heading"><div><div class="eyebrow">ORDER UPDATES</div><h1>Activity</h1><p>Notifications recorded for customer orders.</p></div><button class="secondary-btn" id="activity-refresh">↻ Refresh</button></div>
+        <section class="panel table-panel"><div class="panel-header"><div><h2>Notification history</h2><p id="activity-subtitle">Loading notifications…</p></div></div><div class="table-scroll"><table><thead><tr><th>Notification</th><th>Order</th><th>Customer</th><th>Correlation ID</th></tr></thead><tbody id="activity-rows"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div></section>
+      </section>
+    </main>
+    <footer class="footer">© 2026 MaltaShop <span>Order management</span></footer>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
